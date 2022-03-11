@@ -15,3 +15,27 @@
  * NOTE:
  * You do not have to include movies with similarity score 0 in your results (but you may if you like).
  */
+
+
+select title, count(*) as "similarity score"
+from (
+    select distinct fi.title, c.customer_id
+    from film fi
+    inner join inventory i on fi.film_id = i.film_id
+    inner join rental r on r.inventory_id = i.inventory_id
+    inner join customer c on c.customer_id = r.customer_id
+    where c.customer_id in (
+        select distinct(c.customer_id)
+        from film fi
+        inner join inventory i on fi.film_id = i.film_id
+        inner join rental r on r.inventory_id = i.inventory_id
+        inner join customer c on c.customer_id = r.customer_id
+        where fi.title in
+        (select title
+            from film
+            where title = 'AMERICAN CIRCUS')
+        order by c.customer_id)
+    order by fi.title
+) t
+group by title
+order by count(*) desc, title;
